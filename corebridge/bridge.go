@@ -22,7 +22,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
 
-	accountv1 "openpak/wfc-api/corebridge/accountpb"
+	accountv1 "github.com/openpak/account-api/openpak/account/v1"
 	"openpak/wfc-common/logging"
 )
 
