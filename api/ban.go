@@ -56,9 +56,11 @@ func HandleBan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if err := gpcm.KickPlayerCustomMessage(req.ProfileID, req.Reason, gpcm.WWFCMsgProfileRestrictedCustom); err != nil {
+		http.Error(w, "ban recorded; live session disconnect unavailable", 503)
+		return
+	}
 	replyOK(w, nil)
-
-	gpcm.KickPlayerCustomMessage(req.ProfileID, req.Reason, gpcm.WWFCMsgProfileRestrictedCustom)
 
 	logging.Event("profile_banned", map[string]any{
 		"profile_id":     req.ProfileID,

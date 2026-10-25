@@ -30,13 +30,12 @@ func HandleKick(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	replyOK(w, nil)
-
 	if err := gpcm.KickPlayerCustomMessage(req.ProfileID, req.Reason, gpcm.WWFCMsgKickedCustom); err != nil {
 		http.Error(w, "GPCM unavailable", 503)
 		return
 	}
 
+	replyOK(w, nil)
 	logging.Event("profile_kicked", map[string]any{
 		"profile_id": req.ProfileID,
 		"reason":     req.Reason,
