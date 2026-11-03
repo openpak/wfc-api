@@ -180,6 +180,7 @@ openpak/wfc-common/database
 openpak/wfc-common/filter
 openpak/wfc-common/gpcmclient
 openpak/wfc-common/gperror
+openpak/wfc-common/httplog
 openpak/wfc-common/logging
 openpak/wfc-common/qr2client
 openpak/wfc-common/service

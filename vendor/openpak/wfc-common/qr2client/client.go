@@ -32,8 +32,8 @@ func GetSearchID(addr uint64, pid uint32, generation string) uint64 {
 	}
 	return r.SearchID
 }
-func Login(pid uint32, game, name string, fc uint64, fcgame, ip string, exploit, device, restricted bool, generation string, revision int64) error {
-	_, e := call("login", wfcapi.QR2Request{Login: &wfcapi.Login{ProfileID: pid, Generation: generation, Revision: revision, GameCode: game, InGameName: name, ConsoleFriendCode: fc, FriendKeyGame: fcgame, GPPublicIP: ip, NeedsExploit: exploit, DeviceAuthenticated: device, Restricted: restricted}})
+func Login(pid uint32, game, name string, fc uint64, fcgame, ip string, exploit, device, restricted bool, generation string, revision int64, userID uint64) error {
+	_, e := call("login", wfcapi.QR2Request{Login: &wfcapi.Login{ProfileID: pid, UserID: userID, Generation: generation, Revision: revision, GameCode: game, InGameName: name, ConsoleFriendCode: fc, FriendKeyGame: fcgame, GPPublicIP: ip, NeedsExploit: exploit, DeviceAuthenticated: device, Restricted: restricted}})
 	return e
 }
 func Logout(pid uint32, generation string) {
