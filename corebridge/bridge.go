@@ -128,7 +128,7 @@ func (b *Bridge) poll(version uint64) (*accountv1.PollEventsResponse, error) {
 }
 
 func (b *Bridge) ctxWithKey() context.Context {
-	return metadata.AppendToOutgoingContext(context.Background(), apiKey, b.coreKey)
+	return metadata.AppendToOutgoingContext(context.Background(), apiKey, b.coreKey, "x-internal-key", b.coreKey)
 }
 
 // handle translates one event into this family's transport. It is deliberately

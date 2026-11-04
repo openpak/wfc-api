@@ -47,7 +47,7 @@ func (l *CoreLinks) Account(ctx context.Context, userID int64) (string, bool, er
 	if ok && time.Now().Before(c.until) {
 		return c.account, true, nil
 	}
-	ctx, cancel := context.WithTimeout(metadata.AppendToOutgoingContext(ctx, "X-API-Key", l.key), callLimit)
+	ctx, cancel := context.WithTimeout(metadata.AppendToOutgoingContext(ctx, "X-API-Key", l.key, "x-internal-key", l.key), callLimit)
 	defer cancel()
 	res, err := l.cli.GetLinkBySubject(ctx, &accountv1.GetLinkBySubjectRequest{Namespace: Network, SubjectId: strconv.FormatInt(userID, 10)})
 	if status.Code(err) == codes.NotFound {
@@ -68,7 +68,7 @@ func (l *CoreLinks) Account(ctx context.Context, userID int64) (string, bool, er
 // UserIDs lists the console user ids (namespace "wfc") linked to an account. It is used by
 // the erase path, which runs before the core drops the links.
 func (l *CoreLinks) UserIDs(ctx context.Context, accountID string) ([]int64, error) {
-	ctx, cancel := context.WithTimeout(metadata.AppendToOutgoingContext(ctx, "X-API-Key", l.key), callLimit)
+	ctx, cancel := context.WithTimeout(metadata.AppendToOutgoingContext(ctx, "X-API-Key", l.key, "x-internal-key", l.key), callLimit)
 	defer cancel()
 	res, err := l.cli.ListAccountLinks(ctx, &accountv1.ListAccountLinksRequest{AccountId: accountID, Namespace: Network})
 	if err != nil {
