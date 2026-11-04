@@ -182,6 +182,8 @@ openpak/wfc-common/gpcmclient
 openpak/wfc-common/gperror
 openpak/wfc-common/httplog
 openpak/wfc-common/logging
+openpak/wfc-common/mkwboard
+openpak/wfc-common/mkwboard/leaderboardspb
 openpak/wfc-common/qr2client
 openpak/wfc-common/service
 openpak/wfc-common/wfcapi

@@ -32,6 +32,7 @@ func main() {
 	corebridge.Start(cfg.CoreAddress, cfg.CoreKey, fmt.Sprintf("postgres://%s:%s@%s/%s", cfg.Username, cfg.Password, cfg.DatabaseAddress, cfg.DatabaseName))
 	h := http.NewServeMux()
 	h.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("ok\n")) })
+	h.Handle("/internal/accounts/", service.EraseHandler("wfc", api.Erase))
 	// Operator endpoints retain their existing API-secret role checks so the
 	// deployed website can call its direct owner without a compatibility proxy.
 	h.Handle("/", mux)
