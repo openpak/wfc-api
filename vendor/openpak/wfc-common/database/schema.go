@@ -39,6 +39,8 @@ func (c *Connection) UpdateTables() {
 	
 	`)
 
+	_ = c.EnsurePairing()
+
 	if err := c.EnsureMarioKartWiiGhostArchive(); err != nil {
 		logging.Error("DB", "ghost archive:", err)
 	}

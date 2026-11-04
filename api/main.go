@@ -21,6 +21,8 @@ func StartServer(reload bool) {
 	// Start SQL
 	db = database.Start(config)
 
+	_ = db.EnsurePairing()
+
 	db.RegisterEvents(config, []string{
 		"profile_kicked",
 		"profile_banned",
@@ -40,4 +42,7 @@ func RegisterHandlers(mux *http.ServeMux) {
 	mux.HandleFunc("/api/kick", HandleKick)
 	mux.HandleFunc("/api/baninfo", HandleBanInfo)
 	mux.HandleFunc("/api/profile", HandleProfile)
+	mux.HandleFunc("/api/pair/lookup", HandlePairLookup)
+	mux.HandleFunc("/api/pair/redeem", HandlePairRedeem)
+	mux.HandleFunc("/api/pair/forget", HandlePairForget)
 }

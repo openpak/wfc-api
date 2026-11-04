@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.2.0 - 2026-11-04
+
+- `POST /api/pair/lookup`, `/api/pair/redeem`, `/api/pair/forget`: the pairing-code endpoints behind openpak.org/link for a Wii or DS (wfc-common v0.5.0). Secret-gated; refused outright when no API secret is set. See docs/pairing.md. The friend-code `/api/profile` path is unchanged.
+
 ## v0.1.4 - 2026-11-03
 
 - Internal `/internal/` polls are counted and summarised once a minute instead of logged per call (wfc-common v0.3.1).
