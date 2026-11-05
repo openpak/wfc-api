@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.1 - 2026-11-05
+
+- Fix: corebridge never read an event. A fresh cursor asked the core for events after max int64, the core echoes that version back as `max_version`, and the bridge saved it, so every later poll was past the end (found when the first link-first unlink did not arrive). The head is now found by paging from the start without acting on history, and a cursor at or past 1<<62 is recomputed.
+
 ## v0.5.0 - 2026-11-05
 
 - Link-first (prds#139): this service owns Wii/DS linking. `/api/pair/preview` (8-symbol code, or the 5-digit number with a network tag match from `client_ip` or the in-game `name`), `/api/pair/approve` (core `ReserveLink`/`ActivateLink` with idempotency keys, rollback on a core refusal, 8 consoles per account), `/api/pair/consoles`, `/api/pair/unlink` (optional erase of the console's game data), `/api/pair/stats`; `/api/pair/lookup` is `preview`, `/api/pair/redeem` answers 410. A reaper finishes or rolls back approvals left half-done. See docs/pairing.md.

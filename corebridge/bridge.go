@@ -179,25 +179,36 @@ func (b *Bridge) loadCursor() uint64 {
 	var v int64
 	if row := b.pool.QueryRow(context.Background(),
 		`SELECT version FROM core_events_cursor WHERE id = 1`); row != nil {
-		if err := row.Scan(&v); err == nil {
+		// A cursor at or past 1<<62 is the old head() bug (it saved the sentinel it polled
+		// with); recompute it.
+		if err := row.Scan(&v); err == nil && v < 1<<62 {
 			return uint64(v)
 		}
 	}
 	// A fresh cursor starts at the head. History holds nothing this family
-	// could replay even if it wanted to: there is nowhere to deliver it.
+	// should replay: the link events it acts on were applied when they happened.
 	if head, ok := b.head(); ok {
 		b.saveCursor(head)
+		logging.Notice("COREBRIDGE", "cursor set to the core's head, version", head)
 		return head
 	}
 	return 0 // core unreachable; the first real poll reports and retries
 }
 
+// head is the newest event version. The core echoes the requested version back as max_version
+// when nothing is newer, so the head is found by paging from the start without acting on it.
 func (b *Bridge) head() (uint64, bool) {
-	page, err := b.poll(1<<63 - 1)
-	if err != nil {
-		return 0, false
+	var v uint64
+	for {
+		page, err := b.poll(v)
+		if err != nil {
+			return 0, false
+		}
+		if len(page.GetEvents()) == 0 {
+			return v, true
+		}
+		v = page.GetMaxVersion()
 	}
-	return page.GetMaxVersion(), true
 }
 
 func (b *Bridge) saveCursor(v uint64) {

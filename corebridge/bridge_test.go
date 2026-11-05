@@ -157,3 +157,48 @@ func TestLinkEventsReachTheHandler(t *testing.T) {
 		t.Fatalf("dropped %d, want 2 (switch unlink, friend request)", b.Dropped())
 	}
 }
+
+// realCore pages a fixed event list the way the account core does: events after since_version,
+// max_version = the last one returned, or since_version itself when nothing is newer.
+type realCore struct {
+	accountv1.UnimplementedEventsServer
+	versions []uint64
+}
+
+func (r *realCore) PollEvents(ctx context.Context, in *accountv1.PollEventsRequest) (*accountv1.PollEventsResponse, error) {
+	out := &accountv1.PollEventsResponse{MaxVersion: in.GetSinceVersion()}
+	for _, v := range r.versions {
+		if v > in.GetSinceVersion() && int32(len(out.Events)) < in.GetLimit() {
+			out.Events = append(out.Events, &accountv1.InvalidationEvent{Version: v, Type: "friend_requested"})
+			out.MaxVersion = v
+		}
+	}
+	return out, nil
+}
+
+func TestHeadIsTheNewestVersion(t *testing.T) {
+	var versions []uint64
+	for v := uint64(1); v <= 1203; v++ {
+		versions = append(versions, v)
+	}
+	lis, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	srv := grpc.NewServer()
+	accountv1.RegisterEventsServer(srv, &realCore{versions: versions})
+	go func() { _ = srv.Serve(lis) }()
+	defer srv.Stop()
+	conn, err := grpc.NewClient(lis.Addr().String(), grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conn.Close()
+	b := &Bridge{core: accountv1.NewEventsClient(conn), coreKey: "k", period: time.Millisecond}
+	if h, ok := b.head(); !ok || h != 1203 {
+		t.Fatalf("head %d %v, want 1203 (the old code returned the sentinel it polled with)", h, ok)
+	}
+	if b.Dropped() != 0 {
+		t.Fatal("finding the head must not act on history")
+	}
+}
