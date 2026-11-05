@@ -8,6 +8,7 @@ package corebridge
 import (
 	"context"
 	"net"
+	"strings"
 	"testing"
 	"time"
 
@@ -126,5 +127,33 @@ func TestBacklogDrains(t *testing.T) {
 	}
 	if b.dropped != 3 {
 		t.Fatalf("dropped = %d, want 3", b.dropped)
+	}
+}
+
+type recLinks struct{ calls []string }
+
+func (r *recLinks) Unlinked(ctx context.Context, subject string) { r.calls = append(r.calls, "unlinked:"+subject) }
+func (r *recLinks) AccountGone(ctx context.Context, account, reason string) {
+	r.calls = append(r.calls, reason+":"+account)
+}
+
+func TestLinkEventsReachTheHandler(t *testing.T) {
+	r := &recLinks{}
+	b := &Bridge{links: r}
+	for _, e := range []*accountv1.InvalidationEvent{
+		{Type: "link_unlinked", Namespace: "wfc", SubjectId: "77.1", AccountId: "a"},
+		{Type: "link_unlinked", Namespace: "switch", SubjectId: "x", AccountId: "a"},
+		{Type: "account_deleted", AccountId: "a"},
+		{Type: "account_banned", AccountId: "b"},
+		{Type: "friend_requested", AccountId: "a"},
+	} {
+		b.handle(e)
+	}
+	want := "unlinked:77.1,deleted:a,banned:b"
+	if got := strings.Join(r.calls, ","); got != want {
+		t.Fatalf("calls %q, want %q", got, want)
+	}
+	if b.Dropped() != 2 {
+		t.Fatalf("dropped %d, want 2 (switch unlink, friend request)", b.Dropped())
 	}
 }

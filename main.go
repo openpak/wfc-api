@@ -29,9 +29,11 @@ func main() {
 	defer api.Shutdown()
 	mux := http.NewServeMux()
 	api.RegisterHandlers(mux)
-	corebridge.Start(cfg.CoreAddress, cfg.CoreKey, fmt.Sprintf("postgres://%s:%s@%s/%s", cfg.Username, cfg.Password, cfg.DatabaseAddress, cfg.DatabaseName))
+	corebridge.Start(cfg.CoreAddress, cfg.CoreKey, fmt.Sprintf("postgres://%s:%s@%s/%s", cfg.Username, cfg.Password, cfg.DatabaseAddress, cfg.DatabaseName), api.LinkEvents{})
+	api.StartPairReaper(ctx)
 	h := http.NewServeMux()
 	h.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("ok\n")) })
+	h.HandleFunc("GET /healthz/pairing", api.PairingHealth)
 	h.Handle("/internal/accounts/", service.EraseHandler("wfc", api.Erase))
 	// Operator endpoints retain their existing API-secret role checks so the
 	// deployed website can call its direct owner without a compatibility proxy.

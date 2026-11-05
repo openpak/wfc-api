@@ -42,7 +42,12 @@ func RegisterHandlers(mux *http.ServeMux) {
 	mux.HandleFunc("/api/kick", HandleKick)
 	mux.HandleFunc("/api/baninfo", HandleBanInfo)
 	mux.HandleFunc("/api/profile", HandleProfile)
-	mux.HandleFunc("/api/pair/lookup", HandlePairLookup)
+	mux.HandleFunc("/api/pair/lookup", HandlePairPreview) // the pre-link-first name
+	mux.HandleFunc("/api/pair/preview", HandlePairPreview)
+	mux.HandleFunc("/api/pair/approve", HandlePairApprove)
+	mux.HandleFunc("/api/pair/consoles", HandlePairConsoles)
+	mux.HandleFunc("/api/pair/unlink", HandlePairUnlink)
+	mux.HandleFunc("/api/pair/stats", HandlePairStats)
 	mux.HandleFunc("/api/pair/redeem", HandlePairRedeem)
 	mux.HandleFunc("/api/pair/forget", HandlePairForget)
 }

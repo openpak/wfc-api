@@ -11,6 +11,11 @@
 // one boring file. If a new event kind ever needs its own branch here, the
 // "universal" contract has grown a console-shaped assumption and the contract
 // — not this file — is wrong.
+//
+// The exception is the link lifecycle, which is not social: since link-first
+// (prds repos/wfc-link-first-design.md) a revoked "wfc" link, a deleted account
+// and a banned account are handed to the LinkHandler, which forgets the console
+// and kicks its live sessions.
 package corebridge
 
 import (
@@ -43,8 +48,16 @@ const (
 	apiKey    = "X-API-Key"
 )
 
+// LinkHandler applies the events this family does act on: a revoked "wfc" link, and a
+// deleted or banned account (link-first: the console is forgotten or kicked).
+type LinkHandler interface {
+	Unlinked(ctx context.Context, subject string)
+	AccountGone(ctx context.Context, accountID, reason string)
+}
+
 // Bridge consumes the core's event stream for the Wii/DS family.
 type Bridge struct {
+	links   LinkHandler
 	core    accountv1.EventsClient
 	coreKey string
 	pool    *pgxpool.Pool
@@ -57,7 +70,7 @@ type Bridge struct {
 // deployment without the core keeps serving WFC exactly as before. The DSN is
 // the server's own Postgres string; the bridge adds one small pool and one
 // cursor table, nothing else.
-func Start(coreAddress, coreKey, dsn string) *Bridge {
+func Start(coreAddress, coreKey, dsn string, links LinkHandler) *Bridge {
 	if coreAddress == "" || dsn == "" {
 		return nil
 	}
@@ -83,6 +96,7 @@ func Start(coreAddress, coreKey, dsn string) *Bridge {
 		coreKey: coreKey,
 		pool:    pool,
 		period:  pollEvery,
+		links:   links,
 	}
 	if _, err := pool.Exec(context.Background(),
 		`CREATE TABLE IF NOT EXISTS core_events_cursor (id integer PRIMARY KEY, version bigint NOT NULL)`); err != nil {
@@ -135,6 +149,21 @@ func (b *Bridge) ctxWithKey() context.Context {
 // kind-blind: WFC has no transport for anything, so every kind lands here and
 // nowhere else. No branch, no special case, nothing to get wrong per kind.
 func (b *Bridge) handle(e *accountv1.InvalidationEvent) {
+	if b.links != nil {
+		ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+		defer cancel()
+		switch {
+		case e.GetType() == "link_unlinked" && e.GetNamespace() == "wfc" && e.GetSubjectId() != "":
+			b.links.Unlinked(ctx, e.GetSubjectId())
+			return
+		case e.GetType() == "account_deleted" && e.GetAccountId() != "":
+			b.links.AccountGone(ctx, e.GetAccountId(), "deleted")
+			return
+		case e.GetType() == "account_banned" && e.GetAccountId() != "":
+			b.links.AccountGone(ctx, e.GetAccountId(), "banned")
+			return
+		}
+	}
 	b.dropped++
 	logging.Info("COREBRIDGE", e.GetType(), e.GetEventId(), "account", e.GetAccountId(),
 		"version", e.GetVersion(), "-> no delivery: WFC has no push of any kind")

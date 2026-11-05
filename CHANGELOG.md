@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.5.0 - 2026-11-05
+
+- Link-first (prds#139): this service owns Wii/DS linking. `/api/pair/preview` (8-symbol code, or the 5-digit number with a network tag match from `client_ip` or the in-game `name`), `/api/pair/approve` (core `ReserveLink`/`ActivateLink` with idempotency keys, rollback on a core refusal, 8 consoles per account), `/api/pair/consoles`, `/api/pair/unlink` (optional erase of the console's game data), `/api/pair/stats`; `/api/pair/lookup` is `preview`, `/api/pair/redeem` answers 410. A reaper finishes or rolls back approvals left half-done. See docs/pairing.md.
+- `corebridge` acts on `link_unlinked` (namespace `wfc`), `account_deleted` and `account_banned`: the console is forgotten and its GPCM sessions are kicked through wfc-gpcm's new `kick-user` op. Every other event is still dropped and counted.
+- Erasure also erases consoles named by the local link cache.
+- `GET /healthz/pairing` for the status page.
+- Vendors wfc-common v0.8.0. Deploy before wfc-gpcm v0.4.0 and the website.
+
 ## v0.4.0 - 2026-11-05
 
 - Vendors wfc-common v0.7.0: the users row holds protocol ids only, email and nick are derived (prds#131). Deploy before wfc-gpcm, which drops the columns.

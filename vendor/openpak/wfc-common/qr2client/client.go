@@ -36,6 +36,11 @@ func Login(pid uint32, game, name string, fc uint64, fcgame, ip string, exploit,
 	_, e := call("login", wfcapi.QR2Request{Login: &wfcapi.Login{ProfileID: pid, UserID: userID, Generation: generation, Revision: revision, GameCode: game, InGameName: name, ConsoleFriendCode: fc, FriendKeyGame: fcgame, GPPublicIP: ip, NeedsExploit: exploit, DeviceAuthenticated: device, Restricted: restricted}})
 	return e
 }
+// LoginAs publishes a full login projection (link-first callers set Unlinked).
+func LoginAs(l wfcapi.Login) error {
+	_, e := call("login", wfcapi.QR2Request{Login: &l})
+	return e
+}
 func Logout(pid uint32, generation string) {
 	call("logout", wfcapi.QR2Request{ProfileID: pid, Generation: generation})
 }
