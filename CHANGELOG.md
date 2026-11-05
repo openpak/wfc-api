@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.4.0 - 2026-11-05
+
+- Vendors wfc-common v0.7.0: the users row holds protocol ids only, email and nick are derived (prds#131). Deploy before wfc-gpcm, which drops the columns.
+
 ## v0.3.1 - 2026-11-04
 
 - Fix: the core bridge and the erase now send `x-internal-key` too (wfc-common v0.6.1). The core rejected `X-API-Key` alone, so the bridge had been polling with Unauthenticated and the erase could not list the account's links.
