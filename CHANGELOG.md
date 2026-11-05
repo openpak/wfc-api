@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.2 - 2026-11-05
+
+- Unlink with erase uses wfc-common v0.8.1 `ClearConsoleData`: game data and personal fields go, the console's protocol ids stay, so a relinked DS whose card holds its profile id can go online (was error 60000).
+
 ## v0.5.1 - 2026-11-05
 
 - Fix: corebridge never read an event. A fresh cursor asked the core for events after max int64, the core echoes that version back as `max_version`, and the bridge saved it, so every later poll was past the end (found when the first link-first unlink did not arrive). The head is now found by paging from the start without acting on history, and a cursor at or past 1<<62 is recomputed.

@@ -113,7 +113,7 @@ func (f *fakeStore) ForgetSubject(ctx context.Context, subject string) (uint64, 
 	}
 	return 0, nil
 }
-func (f *fakeStore) EraseUsers(ctx context.Context, ids []int64) (int, error) {
+func (f *fakeStore) ClearConsoleData(ctx context.Context, ids []int64) (int, error) {
 	f.erased = append(f.erased, ids...)
 	return len(ids), nil
 }

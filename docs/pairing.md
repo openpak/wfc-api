@@ -32,7 +32,7 @@ A fresh subject per link means a console unlinked from one account can be linked
 | `/api/pair/preview` (also `/lookup`) | `{secret, code, client_ip, name}` | `{unit, gsbrcd, name, expires_at}`; 404 `invalid_pairing_code` for any miss |
 | `/api/pair/approve` | `{secret, code, core_account_id, client_ip, name}` | `{status:"linked", unit, link_id, already_linked}`; 404 miss, 409 `conflict` (linked elsewhere or 8 consoles), 422 `approval_failed` (core refused; rolled back), 503 `unavailable` |
 | `/api/pair/consoles` | `{secret, core_account_id}` | `{consoles:[{link_id, unit, games, linked_at}]}` (never the console id) |
-| `/api/pair/unlink` | `{secret, core_account_id, link_id, erase}` | 204; core `UnlinkLink`, forget, kick, and with `erase` the console's online game data is deleted; 404 when the account has no such console |
+| `/api/pair/unlink` | `{secret, core_account_id, link_id, erase}` | 204; core `UnlinkLink`, forget, kick, and with `erase` the console's online game data and personal fields are deleted (its protocol ids stay, so its saved WFC data still works); 404 when the account has no such console |
 | `/api/pair/stats` (GET, no secret) | | `{pair_codes_live, pair_issued_24h, pair_approved_24h, linked_consoles}` |
 | `/api/pair/forget` | `{secret, user_id}` | 204 (pre-link-first unlink) |
 | `/api/pair/redeem` | | 410 `gone` (approval is this service's now) |

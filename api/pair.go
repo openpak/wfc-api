@@ -49,7 +49,7 @@ type pairStore interface {
 	StuckApprovals(ctx context.Context) ([]database.StuckApproval, error)
 	ConsolesOf(ctx context.Context, accountID string) ([]database.LinkedConsole, error)
 	ForgetSubject(ctx context.Context, subject string) (uint64, error)
-	EraseUsers(ctx context.Context, userIDs []int64) (int, error)
+	ClearConsoleData(ctx context.Context, userIDs []int64) (int, error)
 	PairingCounters(ctx context.Context) (database.PairingStats, error)
 }
 
@@ -280,7 +280,7 @@ func unlink(ctx context.Context, store pairStore, core pairCore, accountID, link
 		logging.Notice("API", "unlink: kicked", n, "sessions of user", target.UserID)
 	}
 	if erase {
-		n, err := store.EraseUsers(ctx, []int64{int64(target.UserID)})
+		n, err := store.ClearConsoleData(ctx, []int64{int64(target.UserID)})
 		if err != nil {
 			return true, err
 		}
